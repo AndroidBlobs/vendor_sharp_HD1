@@ -1,0 +1,30 @@
+FP_AUTOTEST_LOGCAT_LOG="/data/FP_AUTOTEST_LOGCAT.log"
+
+parameter_1=$(vendor/bin/getprop debug.sys.fqcfingerprint)
+setprop debug.sys.fqcfpret 0
+#vendor=$(getprop ro.boot.fp)
+#echo $0 $parameter_1
+fingerprint_selftest() {
+    logcat -v time -b all > $FP_AUTOTEST_LOGCAT_LOG &
+		#echo "test micromarray self test"
+		#./system/bin/microarray_tee_test -b > /dev/null
+		/vendor/bin/microarray_tee_test -b > /dev/null
+		checkerboardtest=$?
+		busybox killall logcat busybox
+		/vendor/bin/setprop debug.sys.fqcfpret $checkerboardtest
+		#echo "will get the reture"
+		#echo "$checkerboardtest"
+		if [ "$checkerboardtest" -eq "0" ]; then
+			#return 0	
+			return "Ok"
+		elif [ "$checkerboardtest" -eq "1" ]; then
+			echo "ErrorCode=$checkerboardtest"
+			#return 1
+			return " Failed"
+		else
+			echo "ErrorCode=$checkerboardtest"
+			#return 1
+			return " Failed"
+		fi
+}
+fingerprint_selftest
